@@ -66,7 +66,7 @@ func PWHashStoreScryptSensitive(pw string) PWHashStr {
 		pwc,
 		(C.ulonglong)(len(pw)),
 		(C.ulonglong)(C.crypto_pwhash_scryptsalsa208sha256_opslimit_sensitive()),
-		(C.ulonglong)(C.crypto_pwhash_scryptsalsa208sha256_memlimit_sensitive()))) != 0 {
+		(C.size_t)(C.crypto_pwhash_scryptsalsa208sha256_memlimit_sensitive()))) != 0 {
 		panic("see libsodium")
 	}
 	return PWHashStr{C.GoStringN(&s[0], C.int(C.crypto_pwhash_scryptsalsa208sha256_strbytes()))}
@@ -82,7 +82,7 @@ func PWHashStoreScryptInteractive(pw string) PWHashStr {
 		pwc,
 		(C.ulonglong)(len(pw)),
 		(C.ulonglong)(C.crypto_pwhash_scryptsalsa208sha256_opslimit_interactive()),
-		(C.ulonglong)(C.crypto_pwhash_scryptsalsa208sha256_memlimit_interactive()))) != 0 {
+		(C.size_t)(C.crypto_pwhash_scryptsalsa208sha256_memlimit_interactive()))) != 0 {
 		panic("see libsodium")
 	}
 	return PWHashStr{C.GoStringN(&s[0], C.int(C.crypto_pwhash_scryptsalsa208sha256_strbytes()))}

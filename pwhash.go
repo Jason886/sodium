@@ -56,7 +56,39 @@ func (s *PWHashStr) setBytes(b Bytes) {
 	*s = t
 }
 
-//PWHashStore use moderate profile to pack hashed password into PWHashStr.
+func PWHashStoreScryptSensitive(pw string) PWHashStr {
+	s := make([]C.char, int(C.crypto_pwhash_scryptsalsa208sha256_strbytes()))
+	pwc := C.CString(pw)
+	defer C.free(unsafe.Pointer(pwc))
+
+	if int(C.crypto_pwhash_scryptsalsa208sha256_str(
+		&s[0],
+		pwc,
+		(C.ulonglong)(len(pw)),
+		(C.ulonglong)(C.crypto_pwhash_scryptsalsa208sha256_opslimit_sensitive()),
+		(C.ulonglong)(C.crypto_pwhash_scryptsalsa208sha256_memlimit_sensitive()))) != 0 {
+		panic("see libsodium")
+	}
+	return PWHashStr{C.GoStringN(&s[0], C.int(C.crypto_pwhash_scryptsalsa208sha256_strbytes()))}
+}
+
+func PWHashStoreScryptInteractive(pw string) PWHashStr {
+	s := make([]C.char, int(C.crypto_pwhash_scryptsalsa208sha256_strbytes()))
+	pwc := C.CString(pw)
+	defer C.free(unsafe.Pointer(pwc))
+
+	if int(C.crypto_pwhash_scryptsalsa208sha256_str(
+		&s[0],
+		pwc,
+		(C.ulonglong)(len(pw)),
+		(C.ulonglong)(C.crypto_pwhash_scryptsalsa208sha256_opslimit_interactive()),
+		(C.ulonglong)(C.crypto_pwhash_scryptsalsa208sha256_memlimit_interactive()))) != 0 {
+		panic("see libsodium")
+	}
+	return PWHashStr{C.GoStringN(&s[0], C.int(C.crypto_pwhash_scryptsalsa208sha256_strbytes()))}
+}
+
+// PWHashStore use moderate profile to pack hashed password into PWHashStr.
 func PWHashStore(pw string) PWHashStr {
 	s := make([]C.char, cryptoPWHashStrBytes)
 	pwc := C.CString(pw)
@@ -73,7 +105,7 @@ func PWHashStore(pw string) PWHashStr {
 	return PWHashStr{C.GoStringN(&s[0], C.int(cryptoPWHashStrBytes))}
 }
 
-//PWHashStoreSensitive use sensitive profile to pack hashed password into PWHashStr.
+// PWHashStoreSensitive use sensitive profile to pack hashed password into PWHashStr.
 func PWHashStoreSensitive(pw string) PWHashStr {
 	s := make([]C.char, cryptoPWHashStrBytes)
 	pwc := C.CString(pw)
@@ -90,7 +122,7 @@ func PWHashStoreSensitive(pw string) PWHashStr {
 	return PWHashStr{C.GoString(&s[0])}
 }
 
-//PWHashStoreInteractive use interactive profile to pack hashed password into PWHashStr.
+// PWHashStoreInteractive use interactive profile to pack hashed password into PWHashStr.
 func PWHashStoreInteractive(pw string) PWHashStr {
 	s := make([]C.char, cryptoPWHashStrBytes)
 	pwc := C.CString(pw)
@@ -107,7 +139,7 @@ func PWHashStoreInteractive(pw string) PWHashStr {
 	return PWHashStr{C.GoString(&s[0])}
 }
 
-//PWHashVerify verifies password.
+// PWHashVerify verifies password.
 func (s PWHashStr) PWHashVerify(pw string) (err error) {
 	sc := C.CString(s.string)
 	defer C.free(unsafe.Pointer(sc))
